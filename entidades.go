@@ -9,6 +9,18 @@ type Linha struct {
 	Nome   string `json:"nome"`
 }
 
+//LinhaItinerario linha com seu itinerario
+type LinhaItinerario struct {
+	Linha
+	Itinerario []LatLong
+}
+
+//LatLong par de coordenadas
+type LatLong struct {
+	Lat  string
+	Long string
+}
+
 //{"idlinha":"5566","nome":"VILA
 //NOVA","codigo":"266-1",
 //"0":{"lat":"-30.12419057422600000",

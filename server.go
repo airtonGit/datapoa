@@ -21,7 +21,7 @@ func errorResponse(w http.ResponseWriter, info string) {
 	fmt.Fprintf(w, info)
 }
 
-func carregaItinerario(idlinha string) ([]byte, error) {
+func chamarItinerarioAPI(idlinha string) ([]byte, error) {
 	datapoaClient := http.Client{
 		Timeout: time.Second * 10,
 	}
@@ -60,33 +60,32 @@ func itinerarioResponse(w http.ResponseWriter, itinerario *Itinerario) {
 	w.Write(jsonPayload)
 }
 
-func itinerariosHandler(w http.ResponseWriter, req *http.Request) {
+func carregaItinerario(idlinha string) (*Itinerario, error) {
+	jsonPayload, err := chamarItinerarioAPI(idlinha)
+	if err != nil {
+		return nil, fmt.Errorf("request %s", err)
+	}
+	itinerario, err := jsonItinerarioDecode(jsonPayload)
+	if err != nil {
+		return nil, fmt.Errorf("Falha payload %s", err)
+	}
+	return itinerario, nil
+}
 
+func itinerariosHandler(w http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
-	jsonPayload, err := carregaItinerario(vars["id"])
+	itinerario, err := carregaItinerario(vars["id"])
 	if err != nil {
 		errorResponse(w, fmt.Sprintf("Falha request %s", err))
 		return
 	}
-	itinerarios, err := jsonItinerarioDecode(jsonPayload)
-	if err != nil {
-		errorResponse(w, fmt.Sprintf("Falha payload %s", err))
-		return
-	}
-	itinerarioResponse(w, itinerarios)
+	itinerarioResponse(w, itinerario)
 }
 
 func okHandler(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "docs https://github.com/airtonGit/datapoa")
 }
-
-// r := mux.NewRouter()
-// r.Host("{subdomain}.domain.com").
-//   Path("/articles/{category}/{id:[0-9]+}").
-//   Queries("filter", "{filter}").
-//   HandlerFunc(ArticleHandler).
-//   Name("article")
 
 func main() {
 	r := mux.NewRouter()

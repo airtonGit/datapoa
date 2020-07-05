@@ -20,7 +20,7 @@ var (
 
 type linhasStore struct {
 	Validade time.Time //15 minutos
-	LinhaMap map[string]Linha
+	LinhaMap map[string]LinhaItinerario
 	Linhas   []Linha
 }
 
@@ -71,10 +71,6 @@ func atualizaCache(linhas []Linha) {
 	log.Println("Linhas: atualizando cache")
 	linhasCache.Validade = time.Now().Add(15 * time.Minute)
 	linhasCache.Linhas = linhas
-	linhasCache.LinhaMap = make(map[string]Linha, len(linhas))
-	for _, item := range linhas {
-		linhasCache.LinhaMap[item.ID] = item
-	}
 }
 
 func carregarLinhasCached() ([]Linha, error) {
@@ -104,7 +100,6 @@ func linhasHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func linhasPesquisaNomeHandler(w http.ResponseWriter, req *http.Request) {
-	//vars := mux.Vars(req)
 	nome := req.FormValue("nome")
 	log.Println("linhas: pesquisa nome por:" + nome)
 	linhas, err := carregarLinhasCached()

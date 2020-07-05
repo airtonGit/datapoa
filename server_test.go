@@ -6,7 +6,7 @@ import (
 )
 
 func TestInfoRequest(t *testing.T) {
-	got, err := carregaItinerario("5566")
+	got, err := chamarItinerarioAPI("5566")
 	if err != nil || false == strings.Contains(string(got), "VILA NOVA") {
 		t.Fatal("Falhei", err, string(got))
 	}
