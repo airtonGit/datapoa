@@ -81,11 +81,18 @@ func okHandler(w http.ResponseWriter, req *http.Request) {
 	fmt.Fprintf(w, "docs https://github.com/airtonGit/datapoa")
 }
 
+// r := mux.NewRouter()
+// r.Host("{subdomain}.domain.com").
+//   Path("/articles/{category}/{id:[0-9]+}").
+//   Queries("filter", "{filter}").
+//   HandlerFunc(ArticleHandler).
+//   Name("article")
+
 func main() {
 	r := mux.NewRouter()
 
 	r.HandleFunc("/linhas", linhasHandler)
-	//r.HandleFunc("/linhas", linhasHandler)
+	r.Path("/linhas/").Queries("nome", "{nome}").HandlerFunc(linhasPesquisaNomeHandler)
 	r.HandleFunc("/linha/{id}", itinerariosHandler)
 	r.HandleFunc("/ws", serveWs)
 	r.HandleFunc("/", okHandler)
