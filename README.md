@@ -3,7 +3,8 @@ Simples CRUD de linhas e itinerários de POA
 
 ### Endpoints
 
-
+* ws /ws
+  * Novas mensagens indicam novos dados disponíveis
 * GET /linhas
 * GET /linhas/?nome={filtro}
   * Filtrar por nome case insensitive
