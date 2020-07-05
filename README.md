@@ -1,6 +1,10 @@
 # datapoa
 Simples CRUD de linhas e itinerários de POA
 
+### Docker
+Imagem disponivel `docker pull docker.pkg.github.com/airtongit/datapoa/datapoa:latest``
+Porta: 8000
+
 ### Endpoints
 
 * ws /ws
@@ -9,20 +13,19 @@ Simples CRUD de linhas e itinerários de POA
     <!DOCTYPE html>
     <html lang="en">
         <head>
-            <title>WebSocket Example</title>
+            <title>Exemplo WebSocket</title>
         </head>
         <body>
-            <pre id="fileData">{{.Data}}</pre>
+            <pre id="data">{{.Data}}</pre>
             <script type="text/javascript">
                 (function() {
-                    var data = document.getElementById("fileData");
-                    var conn = new WebSocket("ws://{{.Host}}/ws?lastMod={{.LastMod}}");
+                    var data = document.getElementById("data");
+                    var conn = new WebSocket("ws://host.com/ws");
                     conn.onclose = function(evt) {
                         data.textContent = 'Connection closed';
                     }
                     conn.onmessage = function(evt) {
-                        console.log('file updated');
-                        data.textContent = evt.data;
+                        console.log('novos dados disponiveis');
                     }
                 })();
             </script>
