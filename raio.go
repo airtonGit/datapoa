@@ -4,37 +4,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 
 	"github.com/kwahome/go-haversine/pkg/haversine"
 )
-
-func carregarCoordenadasLinha(itinerario Itinerario) ([]LatLong, error) {
-	lista := []LatLong{}
-	for _, item := range itinerario.Pontos {
-		ponto, ok := item.(map[string]interface{})
-		if !ok {
-			log.Println("falha coordenadas map[string]interface{} assertion", itinerario.Nome)
-			continue
-		}
-		latlong := &LatLong{}
-		lat, ok := ponto["lat"].(string)
-		long, ok := ponto["lng"].(string)
-		if !ok {
-			log.Println("falha coordenas lat/lng assertion", itinerario.Nome)
-			continue
-		}
-		var err error
-		latlong.Lat, err = strconv.ParseFloat(lat, 64)
-		latlong.Long, err = strconv.ParseFloat(long, 64)
-		if err != nil {
-			log.Println("falha coordenas lat/lng string -> float", itinerario.Nome)
-			continue
-		}
-		lista = append(lista, *latlong)
-	}
-	return lista, nil
-}
 
 func carregarLinhasItinerarios() error {
 	linhas, err := carregarLinhasCached()
@@ -43,19 +15,12 @@ func carregarLinhasItinerarios() error {
 	}
 	linhasCache.LinhaMap = make(map[string]LinhaItinerario, len(linhas))
 	for _, item := range linhas {
-		linhaItinerario := LinhaItinerario{item, []LatLong{}}
-		itinerario, err := carregaItinerario(item.ID)
+		linhaItinerario, err := carregaItinerario(item.ID)
 		if err != nil {
 			log.Println(fmt.Sprintf("carregerLinhasItinerarios linha %s itnerarios %s", item.Nome, err))
 			continue
 		}
-		latlong, err := carregarCoordenadasLinha(*itinerario)
-		if err != nil {
-			log.Println(fmt.Sprintf("carregerLinhasItinerarios linha %s latlong %s", item.Nome, err))
-			continue
-		}
-		linhaItinerario.Itinerario = latlong
-		linhasCache.LinhaMap[item.ID] = linhaItinerario
+		linhasCache.LinhaMap[item.ID] = *linhaItinerario
 	}
 	return nil
 }
