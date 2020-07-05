@@ -17,8 +17,8 @@ type LinhaItinerario struct {
 
 //LatLong par de coordenadas
 type LatLong struct {
-	Lat  string
-	Long string
+	Lat  float64
+	Long float64
 }
 
 //{"idlinha":"5566","nome":"VILA

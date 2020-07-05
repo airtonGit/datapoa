@@ -42,9 +42,9 @@ func jsonItinerarioDecode(jsonPayload []byte) (*Itinerario, error) {
 		return nil, fmt.Errorf("iterator pontos %s", err)
 	}
 	//Limpando unmarshaled campos da interface já carregados
-	delete(itinerario.Pontos, "ID")
-	delete(itinerario.Pontos, "Codigo")
-	delete(itinerario.Pontos, "Nome")
+	delete(itinerario.Pontos, "idlinha")
+	delete(itinerario.Pontos, "codigo")
+	delete(itinerario.Pontos, "nome")
 
 	return itinerario, nil
 }
@@ -67,7 +67,7 @@ func carregaItinerario(idlinha string) (*Itinerario, error) {
 	}
 	itinerario, err := jsonItinerarioDecode(jsonPayload)
 	if err != nil {
-		return nil, fmt.Errorf("Falha payload %s", err)
+		return nil, fmt.Errorf("Falha decode payload %s", err)
 	}
 	return itinerario, nil
 }
@@ -92,6 +92,7 @@ func main() {
 
 	r.HandleFunc("/linhas", linhasHandler)
 	r.Path("/linhas/").Queries("nome", "{nome}").HandlerFunc(linhasPesquisaNomeHandler)
+	r.Path("/linhas/").Queries("raio", "{raio}", "lat", "{lat}", "lng", "{lng}").HandlerFunc(linhasPesquisaRaioHandler)
 	r.HandleFunc("/linha/{id}", itinerariosHandler)
 	r.HandleFunc("/ws", serveWs)
 	r.HandleFunc("/", okHandler)
