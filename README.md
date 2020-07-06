@@ -6,6 +6,8 @@ Imagem disponivel ``docker pull docker.pkg.github.com/airtongit/datapoa/datapoa:
 
 Porta: 8000
 
+Execução: ``docker run -p8000:8000 docker.pkg.github.com/airtongit/datapoa/datapoa:latest``
+
 ### Endpoints
 
 * ws /ws
