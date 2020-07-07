@@ -1,11 +1,13 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	"github.com/kwahome/go-haversine/pkg/haversine"
 )
@@ -15,12 +17,10 @@ func carregarItinerarioArquivo(id string) (*LinhaItinerario, error) {
 	if err != nil {
 		return nil, fmt.Errorf("falha abrir arquivo %s", err)
 	}
-
 	jsonPayload, err := ioutil.ReadAll(arquivoJSON)
 	if err != nil {
 		return nil, fmt.Errorf("falha ler arquivo %s", err)
 	}
-
 	itinerario, err := jsonItinerarioDecode(jsonPayload)
 	if err != nil {
 		return nil, fmt.Errorf("Falha decode payload %s", err)
@@ -29,13 +29,9 @@ func carregarItinerarioArquivo(id string) (*LinhaItinerario, error) {
 }
 
 func carregarLinhasItinerarios() error {
-	linhas, err := carregarLinhasCached()
-	if err != nil {
-		return fmt.Errorf("carregar itinerarios %s", err)
-	}
-	linhasCache.LinhaMap = make(map[string]LinhaItinerario, len(linhas))
-	for _, item := range linhas {
-		fmt.Println("Carregando itinerario linha", item.Nome)
+	log.Println("Carregando itinerarios cached arquivos...")
+	linhasCache.LinhaMap = make(map[string]LinhaItinerario, len(linhasCache.Linhas))
+	for _, item := range linhasCache.Linhas {
 		linhaItinerario, err := carregarItinerarioArquivo(item.ID)
 		if err != nil {
 			log.Println(fmt.Sprintf("carregerLinhasItinerarios linha %s itnerarios %s", item.Nome, err))
@@ -67,7 +63,7 @@ func raio(lat, long float64, raioKm int) ([]Linha, error) {
 					Codigo: linha.Codigo,
 					Nome:   linha.Nome}
 				dentroRaioLista = append(dentroRaioLista, *linhaProxima)
-				fmt.Println("Linha com itinerario no perimetro ", linha.Nome, distancia)
+				fmt.Println("Itinerario no perimetro ", linha.Nome, distancia)
 				break
 			}
 		}
@@ -75,13 +71,52 @@ func raio(lat, long float64, raioKm int) ([]Linha, error) {
 	return dentroRaioLista, nil
 }
 
+func pesquisaRaioAdapter(raiostr, lng, lat string) ([]Linha, error) {
+	raioKm, err := strconv.Atoi(raiostr)
+	latf, err := strconv.ParseFloat(lat, 64)
+	lngf, err := strconv.ParseFloat(lng, 64)
+	if err != nil {
+		return nil, fmt.Errorf("Falha converterção parametros %s", err)
+	}
+	linhasProximas, err := raio(latf, lngf, raioKm)
+	if err != nil {
+		return nil, fmt.Errorf("Falha pesquisa proximos %s", err)
+	}
+
+	return linhasProximas, nil
+}
+
+func pesquisaRaioResponse(w http.ResponseWriter, resultado []Linha) {
+	jsonResponse, err := json.Marshal(resultado)
+	if err != nil {
+		log.Println("raio falha encode resposta", err)
+		errorResponse(w, "Raio falha encode resposta")
+		return
+	}
+	_, err = w.Write(jsonResponse)
+	if err != nil {
+		log.Println("raio falha envio resposta", err)
+		errorResponse(w, "Raio falha envio resposta")
+		return
+	}
+}
+
 func linhasPesquisaRaioHandler(w http.ResponseWriter, req *http.Request) {
-	raio := req.FormValue("raio")
+	raioKm := req.FormValue("raio")
 	lng := req.FormValue("lng")
 	lat := req.FormValue("lat")
-	log.Println(fmt.Sprintf("raio: filtro raio:%s lat:%s lng:%s", raio, lat, lng))
-	err := carregarLinhasItinerarios()
+	log.Println(fmt.Sprintf("raio: filtro raio:%s lat:%s lng:%s", raioKm, lat, lng))
+	// err := carregarLinhasItinerarios()
+	// if err != nil {
+	// 	log.Println("raio falha carregar itinerarios", err)
+	// 	errorResponse(w, "Raio falha carregar itinerarios")
+	// 	return
+	// }
+	linhasProximas, err := pesquisaRaioAdapter(raioKm, lng, lat)
 	if err != nil {
-		fmt.Fprintf(w, "Falha raio %s", err)
+		log.Println("raio falha pesquisa itinerarios", err)
+		errorResponse(w, "Raio falha pesquisa itinerarios")
+		return
 	}
+	pesquisaRaioResponse(w, linhasProximas)
 }

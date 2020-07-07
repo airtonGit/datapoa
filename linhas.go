@@ -64,30 +64,26 @@ func carregarLinhas() ([]Linha, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Falha decode payload %s", err)
 	}
-	return linhas, nil
-}
 
-func atualizaCache(linhas []Linha) {
-	log.Println("Linhas: atualizando cache")
-	linhasCache.Validade = time.Now().Add(15 * time.Minute)
-	linhasCache.Linhas = linhas
+	return linhas, nil
 }
 
 func carregarLinhasCached() ([]Linha, error) {
-	var linhas []Linha
 	var err error
-
 	if time.Now().Sub(linhasCache.Validade) > 1*time.Second {
-		linhas, err = carregarLinhas()
+		log.Println("Linhas: atualizando cache")
+		linhasCache.Linhas, err = carregarLinhas()
 		if err != nil {
 			return nil, err
 		}
-		atualizaCache(linhas)
+		if err := carregarLinhasItinerarios(); err != nil {
+			log.Println(" linhasCached falha itinerarios. Filtro de raio indisponível", err)
+		}
+		linhasCache.Validade = time.Now().Add(15 * time.Minute)
 	} else {
 		log.Println("linhas: cache hit")
-		linhas = linhasCache.Linhas
 	}
-	return linhas, nil
+	return linhasCache.Linhas, nil
 }
 
 func linhasHandler(w http.ResponseWriter, req *http.Request) {

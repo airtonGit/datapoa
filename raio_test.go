@@ -24,7 +24,7 @@ func TestCarregarLinhasItinerarios(t *testing.T) {
 //"-30.01039857422600000","lng":"-51.14512013620700000"}
 
 func TestRaio(t *testing.T) {
-	err := carregarLinhasItinerarios()
+	_, err := carregarLinhasCached()
 	if err != nil {
 		t.Fatalf("Falhou %s", err)
 	}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -36,7 +37,11 @@ func main() {
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
-
+	log.Println("Inicializando...")
+	if _, err := carregarLinhasCached(); err != nil {
+		log.Println("Falha ao carregar linhas/itinerarios", err)
+		os.Exit(1)
+	}
 	log.Println("Aguardando :8000")
 	log.Fatal(srv.ListenAndServe())
 }
