@@ -2,11 +2,31 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/kwahome/go-haversine/pkg/haversine"
 )
+
+func carregarItinerarioArquivo(id string) (*LinhaItinerario, error) {
+	arquivoJSON, err := os.Open(fmt.Sprintf("json/itinerarios-%s.json", id))
+	if err != nil {
+		return nil, fmt.Errorf("falha abrir arquivo %s", err)
+	}
+
+	jsonPayload, err := ioutil.ReadAll(arquivoJSON)
+	if err != nil {
+		return nil, fmt.Errorf("falha ler arquivo %s", err)
+	}
+
+	itinerario, err := jsonItinerarioDecode(jsonPayload)
+	if err != nil {
+		return nil, fmt.Errorf("Falha decode payload %s", err)
+	}
+	return itinerario, nil
+}
 
 func carregarLinhasItinerarios() error {
 	linhas, err := carregarLinhasCached()
@@ -15,28 +35,44 @@ func carregarLinhasItinerarios() error {
 	}
 	linhasCache.LinhaMap = make(map[string]LinhaItinerario, len(linhas))
 	for _, item := range linhas {
-		linhaItinerario, err := carregaItinerario(item.ID)
+		fmt.Println("Carregando itinerario linha", item.Nome)
+		linhaItinerario, err := carregarItinerarioArquivo(item.ID)
 		if err != nil {
 			log.Println(fmt.Sprintf("carregerLinhasItinerarios linha %s itnerarios %s", item.Nome, err))
 			continue
 		}
 		linhasCache.LinhaMap[item.ID] = *linhaItinerario
 	}
+	fmt.Println("Carregando itinerarios pronto.")
 	return nil
 }
 
-func raio(ponto1, ponto2 haversine.Coordinate) {
-	nairobi := haversine.Coordinate{
-		Latitude:  1.2921,
-		Longitude: 36.8219,
+func raio(lat, long float64, raioKm int) ([]Linha, error) {
+	pontoInterese := haversine.Coordinate{
+		Latitude:  lat,
+		Longitude: long,
 	}
-	mombasa := haversine.Coordinate{
-		Latitude:  4.0435,
-		Longitude: 39.6682,
+	dentroRaioLista := []Linha{}
+	for _, linha := range linhasCache.LinhaMap {
+		for _, itinerario := range linha.Itinerario {
+			pontoItinerario := haversine.Coordinate{
+				Latitude:  itinerario.Lat,
+				Longitude: itinerario.Long,
+			}
+			raioMetros := haversine.Distance(1000 * float64(raioKm))
+			distancia := pontoInterese.DistanceTo(pontoItinerario, haversine.M)
+			if distancia < raioMetros {
+				linhaProxima := &Linha{
+					ID:     linha.ID,
+					Codigo: linha.Codigo,
+					Nome:   linha.Nome}
+				dentroRaioLista = append(dentroRaioLista, *linhaProxima)
+				fmt.Println("Linha com itinerario no perimetro ", linha.Nome, distancia)
+				break
+			}
+		}
 	}
-	units := haversine.M
-	distance := nairobi.DistanceTo(mombasa, units)
-	fmt.Println("Distance from Nairobi =", nairobi, "to Mombasa =", mombasa, "in", units, "is", distance)
+	return dentroRaioLista, nil
 }
 
 func linhasPesquisaRaioHandler(w http.ResponseWriter, req *http.Request) {

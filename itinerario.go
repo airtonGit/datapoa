@@ -64,7 +64,7 @@ func itinerarioParser(itinerario *Itinerario) ([]LatLong, error) {
 	for _, item := range itinerario.Pontos {
 		latlong, err := pontoParser(item)
 		if err != nil {
-			log.Println("itinerarioParser falha", item)
+			log.Println("itinerarioParser falha err:", err, item)
 			continue
 		}
 		lista = append(lista, *latlong)
@@ -82,6 +82,10 @@ func jsonItinerarioDecode(jsonPayload []byte) (*LinhaItinerario, error) {
 		return nil, fmt.Errorf("jsonItinerarioDecode: iterator pontos passo1 %s", err)
 	}
 
+	delete(itinerario.Pontos, "idlinha")
+	delete(itinerario.Pontos, "nome")
+	delete(itinerario.Pontos, "codigo")
+
 	pontosItinerario, err := itinerarioParser(itinerario)
 	if err != nil {
 		return nil, fmt.Errorf("jsonItinerarioDecode: iterator pontos passo2 %s", err)
@@ -92,11 +96,6 @@ func jsonItinerarioDecode(jsonPayload []byte) (*LinhaItinerario, error) {
 	linhaItinerario.Codigo = itinerario.Codigo
 	linhaItinerario.Nome = itinerario.Nome
 	linhaItinerario.Itinerario = pontosItinerario
-
-	// //Limpando unmarshaled campos da interface já carregados
-	// delete(itinerario.Pontos, "idlinha")
-	// delete(itinerario.Pontos, "codigo")
-	// delete(itinerario.Pontos, "nome")
 
 	return linhaItinerario, nil
 }
