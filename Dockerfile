@@ -11,5 +11,6 @@ RUN cd /app && go build -o datapoa
 
 FROM scratch
 COPY --from=build-env /app/datapoa /app/datapoa
+ADD json /app/json
 WORKDIR /app
 ENTRYPOINT [ "./datapoa"]

@@ -8,6 +8,9 @@ Porta: 8000
 
 Execução: ``docker run -p8000:8000 docker.pkg.github.com/airtongit/datapoa/datapoa:latest``
 
+### Opções de linha de comando
+  * -carregar-itinerarios Imagem docker já traz cache em arquivos json de todos os itinerários de todas as linhas. É possível atualizar esta cache com este comando, porém pode demorar vários minutos.
+
 ### Endpoints
 
 * ws /ws

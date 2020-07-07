@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -22,6 +23,13 @@ func okHandler(w http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
+
+	carregarItinerarios := flag.Bool("carregar-itinerarios", false, "Atualizar itinerarios de todas as linhas - pode demorar alguns minutos")
+	flag.Parse()
+	if *carregarItinerarios == true {
+		carregarItinerarioTodos()
+	}
+
 	r := mux.NewRouter()
 
 	r.HandleFunc("/linhas", linhasHandler)
