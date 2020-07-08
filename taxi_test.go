@@ -16,7 +16,15 @@ func TestCarregarPontosTaxi(t *testing.T) {
 }
 
 func TestStorePontosTaxi(t *testing.T) {
-	err := storePontosTaxi()
+	registros, err := carregarPontosTaxiArquivo()
+	if err != nil {
+		t.Fatalf("Falha carga arquivo %s", err)
+	}
+	err = carregarPontosTaxi(registros)
+	if err != nil {
+		t.Fatalf("Falha carga Pontos %s", err)
+	}
+	err = storePontosTaxi()
 	if err != nil {
 		t.Fatalf("Falha store arquivo %s", err)
 	}

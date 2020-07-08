@@ -32,7 +32,7 @@ func carregarPontosTaxi(registros [][]string) error {
 }
 
 func storePontosTaxi() error {
-	arquivo, err := os.OpenFile("dados/pontos.csv", os.O_RDWR|os.O_TRUNC, 0755)
+	arquivo, err := os.OpenFile("dados/pontos.csv", os.O_RDWR|os.O_SYNC, 0755)
 	if err != nil {
 		return err
 	}
