@@ -33,5 +33,4 @@ func TestRaio(t *testing.T) {
 		fmt.Println("got", got)
 		t.Fatalf("Falhou %s len %d", err, len(got))
 	}
-	t.Fatalf("Falhou %s len %d", err, len(got))
 }

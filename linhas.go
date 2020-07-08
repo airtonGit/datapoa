@@ -19,9 +19,10 @@ var (
 )
 
 type linhasStore struct {
-	Validade time.Time //15 minutos
-	LinhaMap map[string]LinhaItinerario
-	Linhas   []Linha
+	Validade   time.Time //15 minutos
+	LinhaMap   map[string]LinhaItinerario
+	Linhas     []Linha
+	PontosTaxi []PontoTaxi
 }
 
 func chamarLinhasAPI() ([]byte, error) {

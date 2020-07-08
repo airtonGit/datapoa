@@ -35,3 +35,11 @@ type Itinerario struct {
 	Codigo string                 `json:"codigo"`
 	Pontos map[string]interface{} `json:"-"`
 }
+
+//PontoTaxi informações basicas
+type PontoTaxi struct {
+	nome      string
+	Latitude  string
+	Longitude string
+	Datahora  string
+}
